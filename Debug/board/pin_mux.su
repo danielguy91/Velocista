@@ -1,0 +1,14 @@
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_clock.h:668:20:CLOCK_EnableClock	24	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_port.h:271:20:PORT_SetPinConfig	32	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_port.h:374:20:PORT_SetPinMux	24	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_port.h:443:20:PORT_SetPinInterruptConfig	24	static
+../board/pin_mux.c:132:6:BOARD_InitBootPins	8	static
+../board/pin_mux.c:158:6:BOARD_InitPins	16	static
+../board/pin_mux.c:221:6:BOARD_InitButtonsPins	24	static
+../board/pin_mux.c:305:6:BOARD_InitLEDsPins	32	static
+../board/pin_mux.c:405:6:BOARD_InitDEBUG_UARTPins	16	static
+../board/pin_mux.c:472:6:BOARD_InitOSCPins	8	static
+../board/pin_mux.c:505:6:BOARD_InitACCELPins	32	static
+../board/pin_mux.c:631:6:BOARD_InitENETPins	48	static
+../board/pin_mux.c:846:6:BOARD_InitSDHCPins	40	static
+../board/pin_mux.c:996:6:BOARD_InitUSBPins	4	static

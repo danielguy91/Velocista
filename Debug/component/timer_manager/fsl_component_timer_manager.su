@@ -1,0 +1,33 @@
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:568:24:DisableGlobalIRQ	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:595:20:EnableGlobalIRQ	24	static
+../component/timer_manager/fsl_component_timer_manager.c:174:16:TimerGetTimerStatus	24	static
+../component/timer_manager/fsl_component_timer_manager.c:185:13:TimerSetTimerStatus	24	static
+../component/timer_manager/fsl_component_timer_manager.c:197:16:TimerGetTimerType	24	static
+../component/timer_manager/fsl_component_timer_manager.c:208:13:TimerSetTimerType	24	static
+../component/timer_manager/fsl_component_timer_manager.c:220:13:TimerMarkTimerFree	24	static
+../component/timer_manager/fsl_component_timer_manager.c:230:13:NotifyTimersTask	8	static
+../component/timer_manager/fsl_component_timer_manager.c:248:13:TimersUpdate	48	static
+../component/timer_manager/fsl_component_timer_manager.c:284:13:TimersUpdateSyncTask	16	static
+../component/timer_manager/fsl_component_timer_manager.c:294:13:HAL_TIMER_Callback	16	static
+../component/timer_manager/fsl_component_timer_manager.c:303:13:TimerManagerTask	48	static
+../component/timer_manager/fsl_component_timer_manager.c:407:23:TimerStop	32	static
+../component/timer_manager/fsl_component_timer_manager.c:443:13:TimerEnable	24	static
+../component/timer_manager/fsl_component_timer_manager.c:470:16:TM_Init	40	static
+../component/timer_manager/fsl_component_timer_manager.c:526:6:TM_Deinit	8	static
+../component/timer_manager/fsl_component_timer_manager.c:543:6:TM_ExitLowpower	8	static
+../component/timer_manager/fsl_component_timer_manager.c:557:6:TM_EnterLowpower	8	static
+../component/timer_manager/fsl_component_timer_manager.c:568:10:TM_GetTimestamp	4	static
+../component/timer_manager/fsl_component_timer_manager.c:585:16:TM_Open	24	static
+../component/timer_manager/fsl_component_timer_manager.c:613:16:TM_Close	32	static
+../component/timer_manager/fsl_component_timer_manager.c:655:9:TM_AreAllTimersOff	4	static
+../component/timer_manager/fsl_component_timer_manager.c:667:9:TM_IsTimerActive	16	static
+../component/timer_manager/fsl_component_timer_manager.c:680:9:TM_IsTimerReady	16	static
+../component/timer_manager/fsl_component_timer_manager.c:696:16:TM_InstallCallback	32	static
+../component/timer_manager/fsl_component_timer_manager.c:717:16:TM_Start	192	static
+../component/timer_manager/fsl_component_timer_manager.c:758:16:TM_Stop	24	static
+../component/timer_manager/fsl_component_timer_manager.c:776:10:TM_GetRemainingTime	32	static
+../component/timer_manager/fsl_component_timer_manager.c:792:10:TM_GetFirstExpireTime	32	static
+../component/timer_manager/fsl_component_timer_manager.c:821:16:TM_GetFirstTimerWithParam	24	static
+../component/timer_manager/fsl_component_timer_manager.c:842:10:TM_NotCountedTimeBeforeSleep	16	static
+../component/timer_manager/fsl_component_timer_manager.c:871:6:TM_SyncLpmTimers	16	static
+../component/timer_manager/fsl_component_timer_manager.c:889:6:TM_MakeTimerTaskReady	8	static

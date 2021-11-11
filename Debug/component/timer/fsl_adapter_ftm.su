@@ -1,0 +1,21 @@
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\CMSIS/core_cm4.h:1679:22:__NVIC_EnableIRQ	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\CMSIS/core_cm4.h:1809:22:__NVIC_SetPriority	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:488:24:EnableIRQ	24	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:648:20:FTM_SetTimerPeriod	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:666:24:FTM_GetCurrentTimerCount	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:700:20:FTM_StartTimer	24	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:714:20:FTM_StopTimer	16	static
+../component/timer/fsl_adapter_ftm.c:41:13:HAL_TimerInterruptHandle	24	static
+../component/timer/fsl_adapter_ftm.c:53:6:FTM0_IRQHandler	8	static
+../component/timer/fsl_adapter_ftm.c:60:6:FTM1_IRQHandler	8	static
+../component/timer/fsl_adapter_ftm.c:67:6:FTM2_IRQHandler	8	static
+../component/timer/fsl_adapter_ftm.c:78:20:HAL_TimerInit	112	static
+../component/timer/fsl_adapter_ftm.c:118:6:HAL_TimerDeinit	24	static
+../component/timer/fsl_adapter_ftm.c:126:6:HAL_TimerEnable	24	static
+../component/timer/fsl_adapter_ftm.c:134:6:HAL_TimerDisable	24	static
+../component/timer/fsl_adapter_ftm.c:143:6:HAL_TimerInstallCallback	32	static
+../component/timer/fsl_adapter_ftm.c:151:10:HAL_TimerGetMaxTimeout	80	static
+../component/timer/fsl_adapter_ftm.c:164:10:HAL_TimerGetCurrentTimerCount	72	static
+../component/timer/fsl_adapter_ftm.c:172:20:HAL_TimerUpdateTimeout	48	static
+../component/timer/fsl_adapter_ftm.c:195:6:HAL_TimerExitLowpower	16	static
+../component/timer/fsl_adapter_ftm.c:200:6:HAL_TimerEnterLowpower	16	static

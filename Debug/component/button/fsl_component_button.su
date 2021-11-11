@@ -1,0 +1,15 @@
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:568:24:DisableGlobalIRQ	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:595:20:EnableGlobalIRQ	24	static
+../component/button/fsl_component_button.c:120:13:BUTTON_NotificationUpdate	16	static
+../component/button/fsl_component_button.c:139:13:BUTTON_Event	24	static
+../component/button/fsl_component_button.c:210:13:BUTTON_Task	32	static
+../component/button/fsl_component_button.c:262:13:BUTTON_TimerEvent	24	static
+../component/button/fsl_component_button.c:296:13:BUTTON_OpenTimer	24	static
+../component/button/fsl_component_button.c:319:13:BUTTON_CloseTimer	24	static
+../component/button/fsl_component_button.c:341:17:BUTTON_Init	32	static
+../component/button/fsl_component_button.c:398:17:BUTTON_InstallCallback	32	static
+../component/button/fsl_component_button.c:413:17:BUTTON_Deinit	32	static
+../component/button/fsl_component_button.c:462:17:BUTTON_GetInput	24	static
+../component/button/fsl_component_button.c:475:17:BUTTON_WakeUpSetting	24	static
+../component/button/fsl_component_button.c:493:17:BUTTON_EnterLowpower	32	static
+../component/button/fsl_component_button.c:531:17:BUTTON_ExitLowpower	32	static

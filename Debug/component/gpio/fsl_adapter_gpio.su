@@ -1,0 +1,30 @@
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\CMSIS/core_cm4.h:1679:22:__NVIC_EnableIRQ	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\CMSIS/core_cm4.h:1809:22:__NVIC_SetPriority	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:568:24:DisableGlobalIRQ	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:595:20:EnableGlobalIRQ	24	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_gpio.h:162:20:GPIO_PinWrite	24	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_gpio.h:244:24:GPIO_PinRead	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_port.h:443:20:PORT_SetPinInterruptConfig	24	static
+../component/gpio/fsl_adapter_gpio.c:72:13:HAL_GpioInterruptHandle	32	static
+../component/gpio/fsl_adapter_gpio.c:127:26:HAL_GpioConflictSearch	16	static
+../component/gpio/fsl_adapter_gpio.c:141:26:HAL_GpioAddItem	32	static
+../component/gpio/fsl_adapter_gpio.c:173:26:HAL_GpioRemoveItem	32	static
+../component/gpio/fsl_adapter_gpio.c:267:6:PORTA_IRQHandler	8	static
+../component/gpio/fsl_adapter_gpio.c:276:6:PORTB_IRQHandler	8	static
+../component/gpio/fsl_adapter_gpio.c:285:6:PORTC_IRQHandler	8	static
+../component/gpio/fsl_adapter_gpio.c:294:6:PORTB_PORTC_IRQHandler	8	static
+../component/gpio/fsl_adapter_gpio.c:304:6:PORTB_PORTC_PORTD_PORTE_IRQHandler	8	static
+../component/gpio/fsl_adapter_gpio.c:316:6:PORTC_PORTD_IRQHandler	8	static
+../component/gpio/fsl_adapter_gpio.c:326:6:PORTD_IRQHandler	8	static
+../component/gpio/fsl_adapter_gpio.c:335:6:PORTE_IRQHandler	8	static
+../component/gpio/fsl_adapter_gpio.c:353:6:HAL_GpioPreInit	4	static
+../component/gpio/fsl_adapter_gpio.c:358:19:HAL_GpioInit	24	static
+../component/gpio/fsl_adapter_gpio.c:389:19:HAL_GpioDeinit	24	static
+../component/gpio/fsl_adapter_gpio.c:404:19:HAL_GpioGetInput	24	static
+../component/gpio/fsl_adapter_gpio.c:417:19:HAL_GpioSetOutput	24	static
+../component/gpio/fsl_adapter_gpio.c:429:19:HAL_GpioInstallCallback	32	static
+../component/gpio/fsl_adapter_gpio.c:445:19:HAL_GpioGetTriggerMode	24	static
+../component/gpio/fsl_adapter_gpio.c:462:19:HAL_GpioSetTriggerMode	56	static
+../component/gpio/fsl_adapter_gpio.c:539:19:HAL_GpioWakeUpSetting	24	static
+../component/gpio/fsl_adapter_gpio.c:559:19:HAL_GpioEnterLowpower	16	static
+../component/gpio/fsl_adapter_gpio.c:566:19:HAL_GpioExitLowpower	24	static

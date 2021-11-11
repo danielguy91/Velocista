@@ -1,0 +1,13 @@
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:568:24:DisableGlobalIRQ	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_common_arm.h:595:20:EnableGlobalIRQ	24	static
+../component/led/fsl_component_led.c:146:21:LED_SetStatus	40	static
+../component/led/fsl_component_led.c:205:13:LED_TimerEvent	32	static
+../component/led/fsl_component_led.c:341:14:LED_Init	40	static
+../component/led/fsl_component_led.c:481:14:LED_Deinit	32	static
+../component/led/fsl_component_led.c:558:14:LED_TurnOnOff	24	static
+../component/led/fsl_component_led.c:571:14:LED_SetColor	24	static
+../component/led/fsl_component_led.c:589:14:LED_Flash	24	static
+../component/led/fsl_component_led.c:629:14:LED_Blip	24	static
+../component/led/fsl_component_led.c:640:14:LED_Dimming	16	static
+../component/led/fsl_component_led.c:730:14:LED_EnterLowpower	16	static
+../component/led/fsl_component_led.c:769:14:LED_ExitLowpower	16	static
