@@ -11,6 +11,7 @@
 #include "MK64F12.h"
 #include "fsl_debug_console.h"
 #include "Util.h"
+#include "string.h"
 
 /***********************************************************************************************************************
  * PROTOTIPOS
@@ -22,7 +23,7 @@ void CMD();
 void ESP_SendATCommand(void);    //, uint16_t msTimeout
 void ESP_chargebuf(const char *str,uint8_t size);
 void InitAT(void);
-
+void HeaderToTX();
 
 
 
@@ -70,11 +71,14 @@ const char ResATudpmicros[]="AT+CIPSTART=\"UDP\",\"192.168.1.5\",30014,3014\r\nC
 const char ResATsendData[]="AT+CIPSEND=13\r\n\r\nOK\r\n> ";
 const char ResATsendData2[]="\r\nRecv 13 bytes\r\n\r\nSEND OK\r\n";
 
+const char ResATsendData10[]="AT+CIPSEND=10\r\n\r\nOK\r\n> ";
+const char ResATsendData101[]="\r\nRecv 10 bytes\r\n\r\nSEND OK\r\n";
+
 /***********************************************************************************************************************
  * VARIABLES
  **********************************************************************************************************************/
 uint8_t StatusProgram;                                                                         // Variable para controlar estado del programa
-volatile uint32_t timerCounter,timerConvercion,timerReset;
+volatile uint32_t timerCounter,timerConvercion,timerReset,TimerPWM;
 
 
 
@@ -87,7 +91,7 @@ enum state current_state;
 uint8_t charge=0,n=0;
 uint8_t RxBufEsp[256],TxBufEsp[256];
 uint8_t indexHeaderESP;                                                                        // Para lectura del Heder
-uint8_t cks,cmdPos_inBuff;                                                                     // cheksun y guardo posicion del comando
+uint8_t cks,cmdPos_inBuff,Command,cksSend;                                                     // cheksun y guardo posicion del comando
 
 
               /******** VARIABLES PARA USB******************/
@@ -156,11 +160,64 @@ int main(void) {
     	      break;
 
     	      case 3:
-
+    	    	  ESP_Rx.iR++;
     	    	  CMD();
 
     	      break;
 
+    	      case 4:
+
+    		           switch(Command){
+
+							   case 0xF0:
+									  if(ESP_Rx.iW != ESP_Rx.iR){
+
+										 if(ESP_Rx.buf[ESP_Rx.iR]!='>'){
+										   ESP_Rx.iR++;
+										  }
+										 else{
+											   Nd.value=0x03;
+											   HeaderToTX();
+											   ESP_Tx.buf[ESP_Tx.iW++]=0xF0;
+											   cksSend^=0xF0;
+											   ESP_Tx.buf[ESP_Tx.iW++]=0xD0;
+											   cksSend^=0xF0;
+											   ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
+											   StatusProgram=1;
+											   charge=0;
+
+													   }
+										}
+
+							   break;
+
+							   case 0xD0:                                       // Tiempo Iniciado
+									  if(ESP_Rx.iW != ESP_Rx.iR){
+
+										 if(ESP_Rx.buf[ESP_Rx.iR]!='>'){
+										   ESP_Rx.iR++;
+										  }
+										 else{
+											   Nd.value=0x03;
+											   HeaderToTX();
+											   ESP_Tx.buf[ESP_Tx.iW++]=0xD0;
+											   cksSend^=0xF0;
+											   ESP_Tx.buf[ESP_Tx.iW++]=0x0D;
+											   cksSend^=0xF0;
+											   ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
+											   StatusProgram=1;
+											   charge=0;
+
+													   }
+										}
+
+							    break;
+
+    		           }
+
+
+
+    	      break;
     	    }
 
 
@@ -482,7 +539,24 @@ if (current_state!=ST_Conect){                  // si no esta conectado el ESP r
 }
 
 
+void HeaderToTX(){           //Ncoman numero de comando a enviar
 
+	ESP_Tx.buf[ESP_Tx.iW++]='U';
+	cksSend='U';
+    ESP_Tx.buf[ESP_Tx.iW++]='N';
+    cksSend^='N';
+    ESP_Tx.buf[ESP_Tx.iW++]='E';
+    cksSend^='E';
+    ESP_Tx.buf[ESP_Tx.iW++]='R';
+    cksSend^='R';
+    ESP_Tx.buf[ESP_Tx.iW++]=Nd.v[0];
+    cksSend^=Nd.v[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Nd.v[1];
+    cksSend^=Nd.v[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=':';
+    cksSend^=':';
+
+}
 
 
 
@@ -522,7 +596,7 @@ void DecodificarHeaderESP(){
 	                    indexHeaderESP++;
 	                }
 	                else {
-	                	ESP_Rx.iR=ESP_Rx.iW;
+	                	ESP_Rx.iR++;
 	                    indexHeaderESP=-1;
 	                }
 	                break;
@@ -638,31 +712,14 @@ void CMD(){
 
 	case 0xF0:
 
+		ESP_chargebuf("AT+CIPSEND=10\r\n",sizeof("AT+CIPSEND=10\r\n"));
 
-//       if(charge==0){
-//	           ESP_chargebuf("AT+CIPSEND=10\r\n",sizeof("AT+CIPSEND=10\r\n"));
-//	    	   charge=1;
-//	    	        }
-//
-//	    if(ESP_Rx.iW != ESP_Rx.iR){
-//
-//	    	if(ESP_Rx.buf[ESP_Rx.iR]==ResAlive[n]){
-//
-//	    	    ESP_Rx.iR++;
-//	        	n++;
-//
-//	        	if(ResAlive[n]=='\0'){
-//	        	 n=0;
-//	        	 charge=0;
-		StatusProgram=1;
-	        	 GPIO_PortToggle(BOARD_LED_BLUE_GPIO, 1u << BOARD_LED_BLUE_GPIO_PIN);
-//	        		                   }
-//	    	}
-//	    }
+	    StatusProgram=4;
+        Command=0xF0;
+
 	    break;
 	case 0xD0:             // Cargar PWM a motores
-
-		StatusProgram=1;
+		ESP_chargebuf("AT+CIPSEND=10\r\n",sizeof("AT+CIPSEND=10\r\n"));
          cmdPos_inBuff++;
          PWM1.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
          cmdPos_inBuff++;
@@ -688,6 +745,10 @@ void CMD(){
          cmdPos_inBuff++;
          TimerMS.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
 
+
+
+         TimerPWM=(TimerMS.u32/10);
+
           // FTM_StopTimer(FTM0_PERIPHERAL);
          //	FTM0_PERIPHERAL->CONTROLS[1].CnV=PWM1.u16[0];
          //	FTM0_PERIPHERAL->CONTROLS[2].CnV=PWM2.u16[0];
@@ -695,8 +756,9 @@ void CMD(){
          //	FTM0_PERIPHERAL->CONTROLS[2].CnV=PWM21;
          	//FTM_StartTimer(FTM0_PERIPHERAL, kFTM_SystemClock);
          PWM=1;
-		GPIO_PortToggle(BOARD_LED_BLUE_GPIO, 1u << BOARD_LED_BLUE_GPIO_PIN);
-
+		 GPIO_PortToggle(BOARD_LED_BLUE_GPIO, 1u << BOARD_LED_BLUE_GPIO_PIN);
+		 StatusProgram=4;
+		 Command=0xD0;
 
 
 	break;
@@ -716,6 +778,7 @@ void CMD(){
 	}
 
 
+
 /* PIT0_IRQn interrupt handler */
 void PIT_CHANNEL_0_IRQHANDLER(void) {
   uint32_t intStatus;
@@ -724,9 +787,11 @@ void PIT_CHANNEL_0_IRQHANDLER(void) {
   PIT_ClearStatusFlags(PIT_PERIPHERAL, PIT_CHANNEL_0, intStatus);
 
   /* Place your code here */
+
   if(timerCounter != 0U){
     	  timerCounter--;
-      }
+
+  }
 
     if(timerReset != 0U){
   	  timerReset--;
@@ -736,8 +801,10 @@ void PIT_CHANNEL_0_IRQHANDLER(void) {
   	  timerConvercion--;
          }
 
+    if(TimerPWM != 0U){
+    	TimerPWM--;
 
-
+        }
 
 
   /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
