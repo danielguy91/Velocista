@@ -19,6 +19,8 @@ source/Velocista.o source/Velocista.d: ../source/Velocista.c \
  D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_uart.h \
  D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_clock.h \
  D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_pit.h \
+ D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_adc16.h \
+ D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h \
  D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\board/pin_mux.h \
  D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\board/clock_config.h \
  D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\device/MK64F12.h \
@@ -47,6 +49,8 @@ D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\board
 D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_uart.h:
 D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_clock.h:
 D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_pit.h:
+D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_adc16.h:
+D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:
 D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\board/pin_mux.h:
 D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\board/clock_config.h:
 D\:\Users\centro\ electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\device/MK64F12.h:

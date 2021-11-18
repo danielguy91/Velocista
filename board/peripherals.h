@@ -13,6 +13,8 @@
 #include "fsl_uart.h"
 #include "fsl_clock.h"
 #include "fsl_pit.h"
+#include "fsl_adc16.h"
+#include "fsl_ftm.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -43,24 +45,83 @@ extern "C" {
 #define PIT_CLK_FREQ 60000000UL
 /* Definition of ticks count for channel 0 - deprecated. */
 #define PIT_0_TICKS 599999U
+/* Definition of ticks count for channel 1 - deprecated. */
+#define PIT_1_TICKS 29999U
 /* PIT interrupt vector ID (number) - deprecated. */
 #define PIT_0_IRQN PIT0_IRQn
 /* PIT interrupt handler identifier - deprecated. */
 #define PIT_0_IRQHANDLER PIT0_IRQHandler
+/* PIT interrupt vector ID (number) - deprecated. */
+#define PIT_1_IRQN PIT1_IRQn
+/* PIT interrupt handler identifier - deprecated. */
+#define PIT_1_IRQHANDLER PIT1_IRQHandler
 /* Definition of channel number for channel 0. */
 #define PIT_CHANNEL_0 kPIT_Chnl_0
+/* Definition of channel number for channel 1. */
+#define PIT_CHANNEL_1 kPIT_Chnl_1
 /* Definition of ticks count for channel 0. */
 #define PIT_CHANNEL_0_TICKS 599999U
+/* Definition of ticks count for channel 1. */
+#define PIT_CHANNEL_1_TICKS 29999U
 /* PIT interrupt vector ID (number). */
 #define PIT_CHANNEL_0_IRQN PIT0_IRQn
 /* PIT interrupt handler identifier. */
 #define PIT_CHANNEL_0_IRQHANDLER PIT0_IRQHandler
+/* PIT interrupt vector ID (number). */
+#define PIT_CHANNEL_1_IRQN PIT1_IRQn
+/* PIT interrupt handler identifier. */
+#define PIT_CHANNEL_1_IRQHANDLER PIT1_IRQHandler
+/* Alias for ADC0 peripheral */
+#define ADC0_PERIPHERAL ADC0
+/* ADC0 interrupt vector ID (number). */
+#define ADC0_IRQN ADC0_IRQn
+/* ADC0 interrupt handler identifier. */
+#define ADC0_IRQHANDLER ADC0_IRQHandler
+/* Channel 0 (SE.13) conversion control group. */
+#define ADC0_CH0_CONTROL_GROUP 0
+/* Channel 1 (SE.12) conversion control group. */
+#define ADC0_CH1_CONTROL_GROUP 0
+/* Channel 2 (SE.20) conversion control group. */
+#define ADC0_CH2_CONTROL_GROUP 0
+/* Channel 3 (SE.1) conversion control group. */
+#define ADC0_CH3_CONTROL_GROUP 0
+/* Alias for ADC1 peripheral */
+#define ADC1_PERIPHERAL ADC1
+/* ADC1 interrupt vector ID (number). */
+#define ADC1_IRQN ADC1_IRQn
+/* ADC1 interrupt handler identifier. */
+#define ADC1_IRQHANDLER ADC1_IRQHandler
+/* Channel 0 (SE.20) conversion control group. */
+#define ADC1_CH0_CONTROL_GROUP 0
+/* Channel 1 (SE.1) conversion control group. */
+#define ADC1_CH1_CONTROL_GROUP 0
+/* Channel 2 (SE.15) conversion control group. */
+#define ADC1_CH2_CONTROL_GROUP 0
+/* Channel 3 (SE.14) conversion control group. */
+#define ADC1_CH3_CONTROL_GROUP 0
+/* Definition of peripheral ID */
+#define FTM0_PERIPHERAL FTM0
+/* Definition of the clock source frequency */
+#define FTM0_CLOCK_SOURCE 4000000UL
+/* Definition of the clock source frequency */
+#define FTM0_TIMER_MODULO_VALUE 3999
+/* Definition of FTM0 channel/pair number 1 on Edge-aligned PWM */
+#define FTM0_PWM_1_CHANNEL kFTM_Chnl_1
+/* Definition of FTM0 channel/pair number 2 on Edge-aligned PWM */
+#define FTM0_PWM_12_CHANNEL kFTM_Chnl_2
 
 /***********************************************************************************************************************
  * Global variables
  **********************************************************************************************************************/
 extern const uart_config_t UART3_config;
 extern const pit_config_t PIT_config;
+extern adc16_channel_config_t ADC0_channelsConfig[4];
+extern const adc16_config_t ADC0_config;
+extern const adc16_channel_mux_mode_t ADC0_muxMode;
+extern adc16_channel_config_t ADC1_channelsConfig[4];
+extern const adc16_config_t ADC1_config;
+extern const adc16_channel_mux_mode_t ADC1_muxMode;
+extern const ftm_config_t FTM0_config;
 
 /***********************************************************************************************************************
  * Initialization functions

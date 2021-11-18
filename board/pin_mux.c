@@ -20,8 +20,8 @@ pin_labels:
 - {pin_num: '35', pin_signal: PTA1/UART0_RX/FTM0_CH6/JTAG_TDI/EZP_DI, label: 'J1[8]', identifier: PTA1}
 - {pin_num: '69', pin_signal: PTB23/SPI2_SIN/SPI0_PCS5/FB_AD28, label: 'J1[10]'}
 - {pin_num: '36', pin_signal: PTA2/UART0_TX/FTM0_CH7/JTAG_TDO/TRACE_SWO/EZP_DO, label: 'J1[12]/J9[6]/TRACE_SWO'}
-- {pin_num: '72', pin_signal: ADC0_SE4b/CMP1_IN0/PTC2/SPI0_PCS2/UART1_CTS_b/FTM0_CH1/FB_AD12/I2S0_TX_FS, label: 'J1[14]'}
-- {pin_num: '73', pin_signal: CMP1_IN1/PTC3/LLWU_P7/SPI0_PCS1/UART1_RX/FTM0_CH2/CLKOUT/I2S0_TX_BCLK, label: 'J1[16]'}
+- {pin_num: '72', pin_signal: ADC0_SE4b/CMP1_IN0/PTC2/SPI0_PCS2/UART1_CTS_b/FTM0_CH1/FB_AD12/I2S0_TX_FS, label: 'J1[14]', identifier: PWM_12}
+- {pin_num: '73', pin_signal: CMP1_IN1/PTC3/LLWU_P7/SPI0_PCS1/UART1_RX/FTM0_CH2/CLKOUT/I2S0_TX_BCLK, label: 'J1[16]', identifier: PWM_1}
 - {pin_num: '64', pin_signal: PTB18/CAN0_TX/FTM2_CH0/I2S0_TX_BCLK/FB_AD15/FTM2_QD_PHA, label: 'J1[1]'}
 - {pin_num: '65', pin_signal: PTB19/CAN0_RX/FTM2_CH1/I2S0_TX_FS/FB_OE_b/FTM2_QD_PHB, label: 'J1[3]'}
 - {pin_num: '71', pin_signal: ADC0_SE15/PTC1/LLWU_P6/SPI0_PCS3/UART1_RTS_b/FTM0_CH0/FB_AD13/I2S0_TXD0, label: 'J1[5]'}
@@ -145,6 +145,16 @@ BOARD_InitPins:
   - {pin_num: '91', peripheral: UART3, signal: TX, pin_signal: PTC17/UART3_TX/ENET0_1588_TMR1/FB_CS4_b/FB_TSIZ0/FB_BE31_24_BLS7_0_b}
   - {pin_num: '90', peripheral: UART3, signal: RX, pin_signal: PTC16/UART3_RX/ENET0_1588_TMR0/FB_CS5_b/FB_TSIZ1/FB_BE23_16_BLS15_8_b}
   - {pin_num: '35', peripheral: GPIOA, signal: 'GPIO, 1', pin_signal: PTA1/UART0_RX/FTM0_CH6/JTAG_TDI/EZP_DI, direction: OUTPUT, gpio_init_state: 'true'}
+  - {pin_num: '14', peripheral: ADC0, signal: 'SE, 1', pin_signal: ADC0_DP1}
+  - {pin_num: '55', peripheral: ADC0, signal: 'SE, 12', pin_signal: ADC0_SE12/PTB2/I2C0_SCL/UART0_RTS_b/ENET0_1588_TMR0/FTM0_FLT3}
+  - {pin_num: '15', peripheral: ADC0, signal: 'SE, 20', pin_signal: ADC0_DM1}
+  - {pin_num: '56', peripheral: ADC0, signal: 'SE, 13', pin_signal: ADC0_SE13/PTB3/I2C0_SDA/UART0_CTS_b/UART0_COL_b/ENET0_1588_TMR1/FTM0_FLT0}
+  - {pin_num: '16', peripheral: ADC1, signal: 'SE, 1', pin_signal: ADC1_DP1}
+  - {pin_num: '58', peripheral: ADC1, signal: 'SE, 14', pin_signal: ADC1_SE14/PTB10/SPI1_PCS0/UART3_RX/FB_AD19/FTM0_FLT1}
+  - {pin_num: '17', peripheral: ADC1, signal: 'SE, 20', pin_signal: ADC1_DM1}
+  - {pin_num: '59', peripheral: ADC1, signal: 'SE, 15', pin_signal: ADC1_SE15/PTB11/SPI1_SCK/UART3_TX/FB_AD18/FTM0_FLT2}
+  - {pin_num: '73', peripheral: FTM0, signal: 'CH, 2', pin_signal: CMP1_IN1/PTC3/LLWU_P7/SPI0_PCS1/UART1_RX/FTM0_CH2/CLKOUT/I2S0_TX_BCLK, direction: OUTPUT}
+  - {pin_num: '72', peripheral: FTM0, signal: 'CH, 1', pin_signal: ADC0_SE4b/CMP1_IN0/PTC2/SPI0_PCS2/UART1_CTS_b/FTM0_CH1/FB_AD12/I2S0_TX_FS, direction: OUTPUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -159,6 +169,8 @@ void BOARD_InitPins(void)
 {
     /* Port A Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortA);
+    /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
     /* Port C Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortC);
 
@@ -190,11 +202,29 @@ void BOARD_InitPins(void)
                       * is configured as a digital output. */
                      | PORT_PCR_DSE(kPORT_LowDriveStrength));
 
+    /* PORTB10 (pin 58) is configured as ADC1_SE14 */
+    PORT_SetPinMux(PORTB, 10U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTB11 (pin 59) is configured as ADC1_SE15 */
+    PORT_SetPinMux(PORTB, 11U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTB2 (pin 55) is configured as ADC0_SE12 */
+    PORT_SetPinMux(BOARD_ADC0_SE12_PORT, BOARD_ADC0_SE12_PIN, kPORT_PinDisabledOrAnalog);
+
+    /* PORTB3 (pin 56) is configured as ADC0_SE13 */
+    PORT_SetPinMux(PORTB, 3U, kPORT_PinDisabledOrAnalog);
+
     /* PORTC16 (pin 90) is configured as UART3_RX */
     PORT_SetPinMux(BOARD_TMR_1588_0_PORT, BOARD_TMR_1588_0_PIN, kPORT_MuxAlt3);
 
     /* PORTC17 (pin 91) is configured as UART3_TX */
     PORT_SetPinMux(BOARD_TMR_1588_1_PORT, BOARD_TMR_1588_1_PIN, kPORT_MuxAlt3);
+
+    /* PORTC2 (pin 72) is configured as FTM0_CH1 */
+    PORT_SetPinMux(BOARD_PWM_12_PORT, BOARD_PWM_12_PIN, kPORT_MuxAlt4);
+
+    /* PORTC3 (pin 73) is configured as FTM0_CH2 */
+    PORT_SetPinMux(BOARD_PWM_1_PORT, BOARD_PWM_1_PIN, kPORT_MuxAlt4);
 }
 
 /* clang-format off */

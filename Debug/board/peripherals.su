@@ -3,7 +3,13 @@ D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers
 D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_pit.h:159:20:PIT_EnableInterrupts	24	static
 D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_pit.h:246:20:PIT_SetTimerPeriod	24	static
 D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_pit.h:288:20:PIT_StartTimer	16	static
-../board/peripherals.c:130:13:UART3_init	8	static
-../board/peripherals.c:176:13:PIT_init	8	static
-../board/peripherals.c:192:6:BOARD_InitPeripherals	8	static
-../board/peripherals.c:202:6:BOARD_InitBootPeripherals	8	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_adc16.h:367:20:ADC16_EnableHardwareTrigger	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:648:20:FTM_SetTimerPeriod	16	static
+D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:700:20:FTM_StartTimer	24	static
+../board/peripherals.c:133:13:UART3_init	8	static
+../board/peripherals.c:192:13:PIT_init	8	static
+../board/peripherals.c:317:13:ADC0_init	8	static
+../board/peripherals.c:438:13:ADC1_init	8	static
+../board/peripherals.c:560:13:FTM0_init	8	static
+../board/peripherals.c:570:6:BOARD_InitPeripherals	8	static
+../board/peripherals.c:583:6:BOARD_InitBootPeripherals	8	static

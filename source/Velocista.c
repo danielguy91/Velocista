@@ -24,8 +24,8 @@ void ESP_SendATCommand(void);    //, uint16_t msTimeout
 void ESP_chargebuf(const char *str,uint8_t size);
 void InitAT(void);
 void HeaderToTX();
-
-
+void Send_Sensores();
+void Sensar(uint8_t Nsen);
 
 /***********************************************************************************************************************
  * DEFINICIONES Y CONSTANTES
@@ -33,12 +33,15 @@ void HeaderToTX();
 volatile _sFlag flag1;
 volatile _sFlag flag1, flag2;
 _sWork PWM1, PWM2,TimerMS;
+_sWork Sensor1,Sensor2,Sensor3,Sensor4,Sensor5,Sensor6,Sensor7,Sensor8;
 _unionNd Nd,proxBytes;
 
 
 #define START flag1.bit.b0
 #define STOP flag1.bit.b1
-#define PWM flag1.bit.b2
+#define PWM flag1.bit.b3
+#define SENSAR_OK flag1.bit.b4
+#define Send_sensors flag1.bit.b5
 
 const char ATmux[]={"AT+CIPMUX=0\r\n"};
 const char ATmode[]={"AT+CWMODE=3\r\n"};
@@ -48,9 +51,9 @@ const char wifimicros[]= {'A','T','+','C','W','J','A','P','=','"','M','I','C','R
 const char wificasa[]= {'A','T','+','C','W','J','A','P','=','"','2','0','8','e','8','8','"',',','"','2','4','6','7','4','9','3','6','1','"','\r','\n'};
 
 const char ATudpcasa[]={'A','T','+','C','I','P','S','T','A','R','T','=','"','U','D','P','"',',','"','1','9','2','.','1','6','8','.','0','.','1','1','"',',','3','0','0','1','4',',','3','0','1','4','\r','\n'};
-const char ATudpmicros[]={'A','T','+','C','I','P','S','T','A','R','T','=','"','U','D','P','"',',','"','1','9','2','.','1','6','8','.','1','.','5','"',',','3','0','0','1','4',',','3','0','1','4','\r','\n'};  //192.168.1.5
+const char ATudpmicros[]={'A','T','+','C','I','P','S','T','A','R','T','=','"','U','D','P','"',',','"','1','9','2','.','1','6','8','.','1','.','8','"',',','3','0','0','1','4',',','3','0','1','4','\r','\n'};  //192.168.1.5
 
-const char ATsendData[]={"AT+CIPSEND=13\r\n"}; // Envia ESP CONECTADO
+const char ATsendData[]={"AT+CIPSEND=9\r\n"}; // Envia ESP CONECTADO
 
 //const char ATclose[]={"AT+CIPCLOSE"};
 //const char ATCifsr[]={"AT+CIFSR\r\n"};
@@ -66,10 +69,10 @@ const char Reswificasa[]="AT+CWJAP=\"208e88\",\"246749361\"\r\nWIFI CONNECTED\r\
 
 
 const char Reswifimicros[]="AT+CWJAP=\"MICROS\",\"micros1234567\"\r\nWIFI CONNECTED\r\nWIFI GOT IP\r\n\r\nOK\r\n";
-const char ResATudpmicros[]="AT+CIPSTART=\"UDP\",\"192.168.1.5\",30014,3014\r\nCONNECT\r\n\r\nOK\r\n";
+const char ResATudpmicros[]="AT+CIPSTART=\"UDP\",\"192.168.1.8\",30014,3014\r\nCONNECT\r\n\r\nOK\r\n";
 
-const char ResATsendData[]="AT+CIPSEND=13\r\n\r\nOK\r\n> ";
-const char ResATsendData2[]="\r\nRecv 13 bytes\r\n\r\nSEND OK\r\n";
+const char ResATsendData[]="AT+CIPSEND=9\r\n\r\nOK\r\n> ";
+const char ResATsendData2[]="\r\nRecv 9 bytes\r\n\r\nSEND OK\r\n";
 
 const char ResATsendData10[]="AT+CIPSEND=10\r\n\r\nOK\r\n> ";
 const char ResATsendData101[]="\r\nRecv 10 bytes\r\n\r\nSEND OK\r\n";
@@ -97,6 +100,8 @@ uint8_t cks,cmdPos_inBuff,Command,cksSend;                                      
               /******** VARIABLES PARA USB******************/
 uint8_t RxBufUsb[256],TxBufUsb[256];                                                           // Variables para USB
 
+volatile uint8_t Sensores,posSen;
+int32_t Cyn70[8];
 
 int main(void) {
 
@@ -129,6 +134,10 @@ int main(void) {
     n=0;
     charge=0;
 
+    Sensores=0;
+    posSen=0;
+
+    PIT_StartTimer(PIT_PERIPHERAL, PIT_CHANNEL_1);              // Inicio el PIT canal 2
     /* Enter an infinite loop, just incrementing a counter. */
 
 
@@ -221,9 +230,35 @@ int main(void) {
     	    }
 
 
-    	    ESP_SendATCommand();
+      if(Send_sensors==1 && timerConvercion==0){
 
 
+    	if(charge==0){
+
+        ESP_chargebuf("AT+CIPSEND=41\r\n",sizeof("AT+CIPSEND=41\r\n"));
+        charge=1;
+
+    	}
+
+
+    	if(ESP_Rx.iW != ESP_Rx.iR){
+
+		       if(ESP_Rx.buf[ESP_Rx.iR]!='>'){
+				  ESP_Rx.iR++;
+				}
+
+				    Nd.value=0x22;
+					HeaderToTX();
+					Send_Sensores();
+					timerConvercion=10;
+					charge=0;
+    	          }
+
+
+       }
+
+
+       ESP_SendATCommand();
 
 
         __asm volatile ("nop");
@@ -483,19 +518,11 @@ if (current_state!=ST_Conect){                  // si no esta conectado el ESP r
 
 	        case ST_ATdata:
 	        	 if(charge==0){
-		         ESP_Tx.buf[ESP_Tx.iW++]='E';
-		         ESP_Tx.buf[ESP_Tx.iW++]='S';
-		         ESP_Tx.buf[ESP_Tx.iW++]='P';
-		         ESP_Tx.buf[ESP_Tx.iW++]=' ';
-		         ESP_Tx.buf[ESP_Tx.iW++]='C';
-		         ESP_Tx.buf[ESP_Tx.iW++]='O';
-		         ESP_Tx.buf[ESP_Tx.iW++]='N';
-		         ESP_Tx.buf[ESP_Tx.iW++]='E';
-		         ESP_Tx.buf[ESP_Tx.iW++]='C';
-		         ESP_Tx.buf[ESP_Tx.iW++]='T';
-		         ESP_Tx.buf[ESP_Tx.iW++]='A';
-		         ESP_Tx.buf[ESP_Tx.iW++]='D';
-		         ESP_Tx.buf[ESP_Tx.iW++]='O';
+	             Nd.value=0x02;
+	             HeaderToTX();
+	             ESP_Tx.buf[ESP_Tx.iW++]=0x0A;
+	        	 cksSend^=0x0A;
+		         ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
 		         charge=1;
 
 
@@ -509,8 +536,8 @@ if (current_state!=ST_Conect){                  // si no esta conectado el ESP r
 	        	 	 n++;
 
 	        	      if(ResATsendData2[n]=='\0'){
-	        	 	     n=0;
-	        	 	     charge=0;
+	        	 	    n=0;
+	        	 	    charge=0;
 	        	 	    current_state=ST_Conect;
 	        	                            }
 
@@ -720,64 +747,74 @@ void CMD(){
 	    break;
 	case 0xD0:             // Cargar PWM a motores
 		ESP_chargebuf("AT+CIPSEND=10\r\n",sizeof("AT+CIPSEND=10\r\n"));
-         cmdPos_inBuff++;
-         PWM1.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         PWM1.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         PWM1.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         PWM1.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         PWM2.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         PWM2.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         PWM2.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         PWM2.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         TimerMS.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         TimerMS.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         TimerMS.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
-         cmdPos_inBuff++;
-         TimerMS.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
 
+		cmdPos_inBuff++;
+        PWM1.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        PWM1.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        PWM1.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        PWM1.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        PWM2.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        PWM2.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        PWM2.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        PWM2.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        TimerMS.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        TimerMS.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        TimerMS.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+        cmdPos_inBuff++;
+        TimerMS.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
 
+        TimerPWM=(TimerMS.u32/10);
 
-         TimerPWM=(TimerMS.u32/10);
-
-          // FTM_StopTimer(FTM0_PERIPHERAL);
-         //	FTM0_PERIPHERAL->CONTROLS[1].CnV=PWM1.u16[0];
-         //	FTM0_PERIPHERAL->CONTROLS[2].CnV=PWM2.u16[0];
-         //	FTM0_PERIPHERAL->CONTROLS[1].CnV=PWM11;
+        FTM_StopTimer(FTM0_PERIPHERAL);
+        FTM0_PERIPHERAL->CONTROLS[1].CnV=PWM1.u16[0];
+        FTM0_PERIPHERAL->CONTROLS[2].CnV=PWM2.u16[0];
+         //FTM0_PERIPHERAL->CONTROLS[1].CnV=PWM11;
          //	FTM0_PERIPHERAL->CONTROLS[2].CnV=PWM21;
-         	//FTM_StartTimer(FTM0_PERIPHERAL, kFTM_SystemClock);
-         PWM=1;
-		 GPIO_PortToggle(BOARD_LED_BLUE_GPIO, 1u << BOARD_LED_BLUE_GPIO_PIN);
-		 StatusProgram=4;
-		 Command=0xD0;
-
+        FTM_StartTimer(FTM0_PERIPHERAL, kFTM_SystemClock);
+        PWM=1;
+		GPIO_PortToggle(BOARD_LED_BLUE_GPIO, 1u << BOARD_LED_BLUE_GPIO_PIN);
+		StatusProgram=4;
+		Command=0xD0;
 
 	break;
 
 	case 0XA0:
+
 		StatusProgram=1;
 		START=1;
 
 	break;
 
 	case 0X0A:
+
 		StatusProgram=1;
 		STOP=1;
+
+	break;
+
+	case 0X0E:                                // Pido valores de sensores
+
+		Send_sensors=1;
+		StatusProgram=1;
+		timerConvercion=10;
 
 	break;
 	    }
 	}
 
-
+/***********************************************************************************************************************
+ * TEMPORIZADORES
+ **********************************************************************************************************************/
 
 /* PIT0_IRQn interrupt handler */
 void PIT_CHANNEL_0_IRQHANDLER(void) {
@@ -814,3 +851,192 @@ void PIT_CHANNEL_0_IRQHANDLER(void) {
   #endif
 }
 
+
+/* PIT1_IRQn interrupt handler */
+void PIT_CHANNEL_1_IRQHANDLER(void) {
+  uint32_t intStatus;
+  /* Reading all interrupt flags of status register */
+  intStatus = PIT_GetStatusFlags(PIT_PERIPHERAL, PIT_CHANNEL_1);
+  PIT_ClearStatusFlags(PIT_PERIPHERAL, PIT_CHANNEL_1, intStatus);
+
+//  /* Place your code here */
+
+
+  Sensar(Sensores);
+  SENSAR_OK=0;
+
+  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
+     Store immediate overlapping exception return operation might vector to incorrect interrupt. */
+  #if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+  #endif
+}
+
+/***********************************************************************************************************************
+ * ANALOGICOS
+ **********************************************************************************************************************/
+
+/* ADC1_IRQn interrupt handler */
+void ADC1_IRQHANDLER(void) {
+
+
+  /* Place your code here */
+	Cyn70[Sensores++]=ADC16_GetChannelConversionValue(ADC1_PERIPHERAL,0);
+
+
+  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
+     Store immediate overlapping exception return operation might vector to incorrect interrupt. */
+  #if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+  #endif
+}
+
+
+/* ADC0_IRQn interrupt handler */
+void ADC0_IRQHANDLER(void) {
+
+
+  /* Place your code here */
+
+	Cyn70[Sensores++]=ADC16_GetChannelConversionValue(ADC0_PERIPHERAL,0);
+
+    if(Sensores>=8){
+    	Sensores=0;
+
+    }
+
+
+  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
+     Store immediate overlapping exception return operation might vector to incorrect interrupt. */
+  #if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+  #endif
+}
+
+
+void Sensar(uint8_t Nsen){
+
+	switch(Nsen){
+
+   case 0:
+	   ADC16_SetChannelConfig(ADC1_PERIPHERAL,0,&ADC1_channelsConfig[0]);
+
+   break;
+   case 1:
+	   ADC16_SetChannelConfig(ADC1_PERIPHERAL,0,&ADC1_channelsConfig[1]);
+
+   break;
+
+   case 2:
+	   ADC16_SetChannelConfig(ADC1_PERIPHERAL,0,&ADC1_channelsConfig[2]);
+
+   break;
+
+   case 3:
+	   ADC16_SetChannelConfig(ADC1_PERIPHERAL,0,&ADC1_channelsConfig[3]);
+
+   break;
+
+   case 4:
+	   ADC16_SetChannelConfig(ADC0_PERIPHERAL,0,&ADC0_channelsConfig[0]);
+
+   break;
+
+   case 5:
+	   ADC16_SetChannelConfig(ADC0_PERIPHERAL,0,&ADC0_channelsConfig[1]);
+
+   break;
+
+   case 6:
+	   ADC16_SetChannelConfig(ADC0_PERIPHERAL,0,&ADC0_channelsConfig[2]);
+
+   break;
+
+   case 7:
+   ADC16_SetChannelConfig(ADC0_PERIPHERAL,0,&ADC0_channelsConfig[3]);
+
+   break;
+
+   }
+}
+
+void Send_Sensores(){
+
+	Sensor1.u32=Cyn70[0];
+	Sensor2.u32=Cyn70[1];
+	Sensor3.u32=Cyn70[2];
+	Sensor4.u32=Cyn70[3];
+	Sensor5.u32=Cyn70[4];
+	Sensor6.u32=Cyn70[5];
+	Sensor7.u32=Cyn70[6];
+	Sensor8.u32=Cyn70[7];
+
+	ESP_Tx.buf[ESP_Tx.iW++]=0x0E;
+	cksSend^=0x0E;
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor1.u8[0];
+    cksSend^=Sensor1.u8[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor1.u8[1];
+    cksSend^=Sensor1.u8[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor1.u8[2];
+    cksSend^=Sensor1.u8[2];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor1.u8[3];
+    cksSend^=Sensor1.u8[3];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor2.u8[0];
+    cksSend^=Sensor2.u8[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor2.u8[1];
+    cksSend^=Sensor2.u8[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor2.u8[2];
+    cksSend^=Sensor2.u8[2];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor2.u8[3];
+    cksSend^=Sensor2.u8[3];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor3.u8[0];
+    cksSend^=Sensor3.u8[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor3.u8[1];
+    cksSend^=Sensor3.u8[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor3.u8[2];
+    cksSend^=Sensor3.u8[2];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor3.u8[3];
+    cksSend^=Sensor3.u8[3];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor4.u8[0];
+    cksSend^=Sensor4.u8[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor4.u8[1];
+    cksSend^=Sensor4.u8[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor4.u8[2];
+    cksSend^=Sensor4.u8[2];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor4.u8[3];
+    cksSend^=Sensor4.u8[3];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor5.u8[0];
+    cksSend^=Sensor5.u8[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor5.u8[1];
+    cksSend^=Sensor5.u8[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor5.u8[2];
+    cksSend^=Sensor5.u8[2];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor5.u8[3];
+    cksSend^=Sensor5.u8[3];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor6.u8[0];
+    cksSend^=Sensor6.u8[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor6.u8[1];
+    cksSend^=Sensor6.u8[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor6.u8[2];
+    cksSend^=Sensor6.u8[2];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor6.u8[3];
+    cksSend^=Sensor6.u8[3];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor7.u8[0];
+    cksSend^=Sensor7.u8[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor7.u8[1];
+    cksSend^=Sensor7.u8[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor7.u8[2];
+    cksSend^=Sensor7.u8[2];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor7.u8[3];
+    cksSend^=Sensor7.u8[3];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor8.u8[0];
+    cksSend^=Sensor8.u8[0];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor8.u8[1];
+    cksSend^=Sensor8.u8[1];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor8.u8[2];
+    cksSend^=Sensor8.u8[2];
+    ESP_Tx.buf[ESP_Tx.iW++]=Sensor8.u8[3];
+    cksSend^=Sensor8.u8[3];
+    ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
+
+}

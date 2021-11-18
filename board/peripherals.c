@@ -63,6 +63,9 @@ instance:
     - interrupt_table:
       - 0: []
       - 1: []
+      - 2: []
+      - 3: []
+      - 4: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -167,6 +170,19 @@ instance:
           - enable_priority: 'false'
           - priority: '0'
           - enable_custom_name: 'false'
+      - 1:
+        - channel_id: 'CHANNEL_1'
+        - channelNumber: '1'
+        - enableChain: 'false'
+        - timerPeriod: '500'
+        - startTimer: 'false'
+        - enableInterrupt: 'true'
+        - interrupt:
+          - IRQn: 'PIT1_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'false'
+          - priority: '0'
+          - enable_custom_name: 'false'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const pit_config_t PIT_config = {
@@ -178,12 +194,374 @@ static void PIT_init(void) {
   PIT_Init(PIT_PERIPHERAL, &PIT_config);
   /* Set channel 0 period to 10 ms (600000 ticks). */
   PIT_SetTimerPeriod(PIT_PERIPHERAL, PIT_CHANNEL_0, PIT_CHANNEL_0_TICKS);
+  /* Set channel 1 period to 500 µs (30000 ticks). */
+  PIT_SetTimerPeriod(PIT_PERIPHERAL, PIT_CHANNEL_1, PIT_CHANNEL_1_TICKS);
   /* Enable interrupts from channel 0. */
   PIT_EnableInterrupts(PIT_PERIPHERAL, PIT_CHANNEL_0, kPIT_TimerInterruptEnable);
+  /* Enable interrupts from channel 1. */
+  PIT_EnableInterrupts(PIT_PERIPHERAL, PIT_CHANNEL_1, kPIT_TimerInterruptEnable);
   /* Enable interrupt PIT_CHANNEL_0_IRQN request in the NVIC */
   EnableIRQ(PIT_CHANNEL_0_IRQN);
+  /* Enable interrupt PIT_CHANNEL_1_IRQN request in the NVIC */
+  EnableIRQ(PIT_CHANNEL_1_IRQN);
   /* Start channel 0. */
   PIT_StartTimer(PIT_PERIPHERAL, PIT_CHANNEL_0);
+}
+
+/***********************************************************************************************************************
+ * ADC0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'ADC0'
+- type: 'adc16'
+- mode: 'ADC'
+- custom_name_enabled: 'false'
+- type_id: 'adc16_897558f9b7366ed198de18c33097d7d2'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'ADC0'
+- config_sets:
+  - fsl_adc16:
+    - adc16_config:
+      - referenceVoltageSource: 'kADC16_ReferenceVoltageSourceVref'
+      - clockSource: 'kADC16_ClockSourceAlt0'
+      - enableAsynchronousClock: 'true'
+      - clockDivider: 'kADC16_ClockDivider8'
+      - resolution: 'kADC16_ResolutionSE16Bit'
+      - longSampleMode: 'kADC16_LongSampleCycle24'
+      - hardwareAverageMode: 'kADC16_HardwareAverageCount4'
+      - enableHighSpeed: 'true'
+      - enableLowPower: 'false'
+      - enableContinuousConversion: 'false'
+    - adc16_channel_mux_mode: 'kADC16_ChannelMuxA'
+    - adc16_hardware_compare_config:
+      - hardwareCompareModeEnable: 'false'
+    - doAutoCalibration: 'true'
+    - trigger: 'false'
+    - enable_dma: 'false'
+    - enable_irq: 'true'
+    - adc_interrupt:
+      - IRQn: 'ADC0_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'false'
+      - priority: '0'
+      - enable_custom_name: 'false'
+    - adc16_channels_config:
+      - 0:
+        - channelName: ''
+        - enableDifferentialConversion: 'false'
+        - channelNumber: 'SE.13'
+        - enableInterruptOnConversionCompleted: 'true'
+        - channelGroup: '0'
+        - initializeChannel: 'true'
+      - 1:
+        - channelName: ''
+        - enableDifferentialConversion: 'false'
+        - channelNumber: 'SE.12'
+        - enableInterruptOnConversionCompleted: 'true'
+        - channelGroup: '0'
+        - initializeChannel: 'false'
+      - 2:
+        - channelName: ''
+        - enableDifferentialConversion: 'false'
+        - channelNumber: 'SE.20'
+        - enableInterruptOnConversionCompleted: 'true'
+        - channelGroup: '0'
+        - initializeChannel: 'false'
+      - 3:
+        - channelName: ''
+        - enableDifferentialConversion: 'false'
+        - channelNumber: 'SE.1'
+        - enableInterruptOnConversionCompleted: 'true'
+        - channelGroup: '0'
+        - initializeChannel: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+adc16_channel_config_t ADC0_channelsConfig[4] = {
+  {
+    .channelNumber = 13U,
+    .enableDifferentialConversion = false,
+    .enableInterruptOnConversionCompleted = true,
+  },
+  {
+    .channelNumber = 12U,
+    .enableDifferentialConversion = false,
+    .enableInterruptOnConversionCompleted = true,
+  },
+  {
+    .channelNumber = 20U,
+    .enableDifferentialConversion = false,
+    .enableInterruptOnConversionCompleted = true,
+  },
+  {
+    .channelNumber = 1U,
+    .enableDifferentialConversion = false,
+    .enableInterruptOnConversionCompleted = true,
+  }
+};
+const adc16_config_t ADC0_config = {
+  .referenceVoltageSource = kADC16_ReferenceVoltageSourceVref,
+  .clockSource = kADC16_ClockSourceAlt0,
+  .enableAsynchronousClock = true,
+  .clockDivider = kADC16_ClockDivider8,
+  .resolution = kADC16_ResolutionSE16Bit,
+  .longSampleMode = kADC16_LongSampleCycle24,
+  .hardwareAverageMode = kADC16_HardwareAverageCount4,
+  .enableHighSpeed = true,
+  .enableLowPower = false,
+  .enableContinuousConversion = false
+};
+const adc16_channel_mux_mode_t ADC0_muxMode = kADC16_ChannelMuxA;
+
+static void ADC0_init(void) {
+  /* Initialize ADC16 converter */
+  ADC16_Init(ADC0_PERIPHERAL, &ADC0_config);
+  /* Make sure, that software trigger is used */
+  ADC16_EnableHardwareTrigger(ADC0_PERIPHERAL, false);
+  /* Configure channel multiplexing mode */
+  ADC16_SetChannelMuxMode(ADC0_PERIPHERAL, ADC0_muxMode);
+  /* Perform auto calibration */
+  ADC16_DoAutoCalibration(ADC0_PERIPHERAL);
+  /* Initialize channel */
+  ADC16_SetChannelConfig(ADC0_PERIPHERAL, ADC0_CH0_CONTROL_GROUP, &ADC0_channelsConfig[0]);
+  /* Enable interrupt ADC0_IRQn request in the NVIC. */
+  EnableIRQ(ADC0_IRQN);
+}
+
+/***********************************************************************************************************************
+ * ADC1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'ADC1'
+- type: 'adc16'
+- mode: 'ADC'
+- custom_name_enabled: 'false'
+- type_id: 'adc16_897558f9b7366ed198de18c33097d7d2'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'ADC1'
+- config_sets:
+  - fsl_adc16:
+    - adc16_config:
+      - referenceVoltageSource: 'kADC16_ReferenceVoltageSourceVref'
+      - clockSource: 'kADC16_ClockSourceAlt0'
+      - enableAsynchronousClock: 'true'
+      - clockDivider: 'kADC16_ClockDivider8'
+      - resolution: 'kADC16_ResolutionSE16Bit'
+      - longSampleMode: 'kADC16_LongSampleCycle24'
+      - hardwareAverageMode: 'kADC16_HardwareAverageCount4'
+      - enableHighSpeed: 'true'
+      - enableLowPower: 'false'
+      - enableContinuousConversion: 'false'
+    - adc16_channel_mux_mode: 'kADC16_ChannelMuxA'
+    - adc16_hardware_compare_config:
+      - hardwareCompareModeEnable: 'false'
+    - doAutoCalibration: 'true'
+    - trigger: 'false'
+    - enable_dma: 'false'
+    - enable_irq: 'true'
+    - adc_interrupt:
+      - IRQn: 'ADC1_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'false'
+      - priority: '0'
+      - enable_custom_name: 'false'
+    - adc16_channels_config:
+      - 0:
+        - channelName: ''
+        - enableDifferentialConversion: 'false'
+        - channelNumber: 'SE.20'
+        - enableInterruptOnConversionCompleted: 'true'
+        - channelGroup: '0'
+        - initializeChannel: 'true'
+      - 1:
+        - channelName: ''
+        - enableDifferentialConversion: 'false'
+        - channelNumber: 'SE.1'
+        - enableInterruptOnConversionCompleted: 'true'
+        - channelGroup: '0'
+        - initializeChannel: 'false'
+      - 2:
+        - channelName: ''
+        - enableDifferentialConversion: 'false'
+        - channelNumber: 'SE.15'
+        - enableInterruptOnConversionCompleted: 'true'
+        - channelGroup: '0'
+        - initializeChannel: 'false'
+      - 3:
+        - channelName: ''
+        - enableDifferentialConversion: 'false'
+        - channelNumber: 'SE.14'
+        - enableInterruptOnConversionCompleted: 'true'
+        - channelGroup: '0'
+        - initializeChannel: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+adc16_channel_config_t ADC1_channelsConfig[4] = {
+  {
+    .channelNumber = 20U,
+    .enableDifferentialConversion = false,
+    .enableInterruptOnConversionCompleted = true,
+  },
+  {
+    .channelNumber = 1U,
+    .enableDifferentialConversion = false,
+    .enableInterruptOnConversionCompleted = true,
+  },
+  {
+    .channelNumber = 15U,
+    .enableDifferentialConversion = false,
+    .enableInterruptOnConversionCompleted = true,
+  },
+  {
+    .channelNumber = 14U,
+    .enableDifferentialConversion = false,
+    .enableInterruptOnConversionCompleted = true,
+  }
+};
+const adc16_config_t ADC1_config = {
+  .referenceVoltageSource = kADC16_ReferenceVoltageSourceVref,
+  .clockSource = kADC16_ClockSourceAlt0,
+  .enableAsynchronousClock = true,
+  .clockDivider = kADC16_ClockDivider8,
+  .resolution = kADC16_ResolutionSE16Bit,
+  .longSampleMode = kADC16_LongSampleCycle24,
+  .hardwareAverageMode = kADC16_HardwareAverageCount4,
+  .enableHighSpeed = true,
+  .enableLowPower = false,
+  .enableContinuousConversion = false
+};
+const adc16_channel_mux_mode_t ADC1_muxMode = kADC16_ChannelMuxA;
+
+static void ADC1_init(void) {
+  /* Initialize ADC16 converter */
+  ADC16_Init(ADC1_PERIPHERAL, &ADC1_config);
+  /* Make sure, that software trigger is used */
+  ADC16_EnableHardwareTrigger(ADC1_PERIPHERAL, false);
+  /* Configure channel multiplexing mode */
+  ADC16_SetChannelMuxMode(ADC1_PERIPHERAL, ADC1_muxMode);
+  /* Perform auto calibration */
+  ADC16_DoAutoCalibration(ADC1_PERIPHERAL);
+  /* Initialize channel */
+  ADC16_SetChannelConfig(ADC1_PERIPHERAL, ADC1_CH0_CONTROL_GROUP, &ADC1_channelsConfig[0]);
+  /* Enable interrupt ADC1_IRQn request in the NVIC. */
+  EnableIRQ(ADC1_IRQN);
+}
+
+/***********************************************************************************************************************
+ * FTM0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'FTM0'
+- type: 'ftm'
+- mode: 'EdgeAligned'
+- custom_name_enabled: 'false'
+- type_id: 'ftm_a206ca22312775f3c8a462078188c129'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FTM0'
+- config_sets:
+  - ftm_main_config:
+    - ftm_config:
+      - clockSource: 'kFTM_SystemClock'
+      - clockSourceFreq: 'BOARD_BootClockVLPR'
+      - timerPrescaler: '1'
+      - timerOutputFrequency: '1 kHz'
+      - systemClockSource: 'BusInterfaceClock'
+      - systemClockSourceFreq: 'mirrored_value'
+      - faultMode: 'kFTM_Fault_Disable'
+      - inputFilterPeriod: '1'
+      - faultInputs:
+        - 0:
+          - enableFaultInput: 'false'
+          - faultLevelVal: 'low'
+          - useFaultFilter: 'false'
+        - 1:
+          - enableFaultInput: 'false'
+          - faultLevelVal: 'low'
+          - useFaultFilter: 'false'
+        - 2:
+          - enableFaultInput: 'false'
+          - faultLevelVal: 'low'
+          - useFaultFilter: 'false'
+        - 3:
+          - enableFaultInput: 'false'
+          - faultLevelVal: 'low'
+          - useFaultFilter: 'false'
+      - deadTimePrescale: 'kFTM_Deadtime_Prescale_1'
+      - deadTimePeriod: '0'
+      - pwmSyncMode: 'kFTM_SoftwareTrigger'
+      - reloadPoints: ''
+      - extTriggers: ''
+      - chnlInitState: ''
+      - chnlPolarity: ''
+      - bdmMode: 'kFTM_BdmMode_0'
+      - useGlobalTimeBase: 'false'
+    - timer_interrupts: ''
+    - enable_irq: 'false'
+    - ftm_interrupt:
+      - IRQn: 'FTM0_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'false'
+      - priority: '0'
+      - enable_custom_name: 'false'
+    - EnableTimerInInit: 'true'
+  - ftm_edge_aligned_mode:
+    - ftm_edge_aligned_channels_config:
+      - 0:
+        - channelId: 'PWM_1'
+        - edge_aligned_mode: 'kFTM_EdgeAlignedPwm'
+        - edge_aligned_pwm:
+          - chnlNumber: 'kFTM_Chnl_1'
+          - level: 'kFTM_LowTrue'
+          - dutyValueStr: '0'
+          - enable_chan_irq: 'false'
+      - 1:
+        - channelId: 'PWM_12'
+        - edge_aligned_mode: 'kFTM_EdgeAlignedPwm'
+        - edge_aligned_pwm:
+          - chnlNumber: 'kFTM_Chnl_2'
+          - level: 'kFTM_LowTrue'
+          - dutyValueStr: '0'
+          - enable_chan_irq: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const ftm_config_t FTM0_config = {
+  .prescale = kFTM_Prescale_Divide_1,
+  .faultMode = kFTM_Fault_Disable,
+  .faultFilterValue = 0,
+  .deadTimePrescale = kFTM_Deadtime_Prescale_1,
+  .deadTimeValue = 0,
+  .pwmSyncMode = kFTM_SoftwareTrigger,
+  .reloadPoints = 0,
+  .extTriggers = 0,
+  .chnlInitState = 0,
+  .chnlPolarity = 0,
+  .bdmMode = kFTM_BdmMode_0,
+  .useGlobalTimeBase = false
+};
+
+const ftm_chnl_pwm_config_param_t FTM0_pwmSignalParams[] = { 
+  {
+    .chnlNumber = kFTM_Chnl_1,
+    .level = kFTM_LowTrue,
+    .dutyValue = 0,
+  },
+  {
+    .chnlNumber = kFTM_Chnl_2,
+    .level = kFTM_LowTrue,
+    .dutyValue = 0,
+  }
+};
+
+static void FTM0_init(void) {
+  FTM_Init(FTM0_PERIPHERAL, &FTM0_config);
+  FTM_SetTimerPeriod(FTM0_PERIPHERAL, FTM0_TIMER_MODULO_VALUE);
+  FTM_SetupPwmMode(FTM0_PERIPHERAL, FTM0_pwmSignalParams, sizeof(FTM0_pwmSignalParams) / sizeof(ftm_chnl_pwm_config_param_t), kFTM_EdgeAlignedPwm);
+  FTM_StartTimer(FTM0_PERIPHERAL, kFTM_SystemClock);
 }
 
 /***********************************************************************************************************************
@@ -194,6 +572,9 @@ void BOARD_InitPeripherals(void)
   /* Initialize components */
   UART3_init();
   PIT_init();
+  ADC0_init();
+  ADC1_init();
+  FTM0_init();
 }
 
 /***********************************************************************************************************************
