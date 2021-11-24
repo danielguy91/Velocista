@@ -9,18 +9,24 @@ D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers
 D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_adc16.h:491:24:ADC16_GetChannelConversionValue	16	static
 D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:700:20:FTM_StartTimer	24	static
 D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers/fsl_ftm.h:714:20:FTM_StopTimer	16	static
-../source/Velocista.c:106:5:main	8	static
-../source/Velocista.c:275:6:UART3_RX_TX_IRQHandler	16	static
-../source/Velocista.c:326:6:ESP_SendATCommand	8	static
-../source/Velocista.c:344:6:ESP_chargebuf	24	static
-../source/Velocista.c:357:6:InitAT	16	static
-../source/Velocista.c:569:6:HeaderToTX	4	static
-../source/Velocista.c:598:6:DecodificarHeaderESP	16	static
-../source/Velocista.c:706:6:CksVerif	4	static
-../source/Velocista.c:736:6:CMD	8	static
-../source/Velocista.c:820:6:PIT0_IRQHandler	16	static
-../source/Velocista.c:856:6:PIT1_IRQHandler	16	static
-../source/Velocista.c:880:6:ADC1_IRQHandler	8	static
-../source/Velocista.c:896:6:ADC0_IRQHandler	8	static
-../source/Velocista.c:917:6:Sensar	16	static
-../source/Velocista.c:963:6:Send_Sensores	4	static
+../source/Velocista.c:133:5:main	8	static
+../source/Velocista.c:342:6:UART3_RX_TX_IRQHandler	16	static
+../source/Velocista.c:393:6:ESP_SendATCommand	8	static
+../source/Velocista.c:411:6:ESP_chargebuf	24	static
+../source/Velocista.c:424:6:InitAT	16	static
+../source/Velocista.c:636:6:HeaderToTX	4	static
+../source/Velocista.c:665:6:DecodificarHeaderESP	16	static
+../source/Velocista.c:773:6:CksVerif	4	static
+../source/Velocista.c:803:6:CMD	8	static
+../source/Velocista.c:968:6:Respuestas	8	static
+../source/Velocista.c:1027:6:PIT0_IRQHandler	16	static
+../source/Velocista.c:1065:6:PIT1_IRQHandler	16	static
+../source/Velocista.c:1089:6:ADC1_IRQHandler	8	static
+../source/Velocista.c:1115:6:ADC0_IRQHandler	8	static
+../source/Velocista.c:1146:6:Sensar	16	static
+../source/Velocista.c:1192:6:Send_Sensores	4	static
+../source/Velocista.c:1277:6:MaxMin	8	static
+../source/Velocista.c:1296:6:Normalizado	24	static
+../source/Velocista.c:1320:7:Caulcolo_Pesos	24	static
+../source/Velocista.c:1351:6:PID	24	static
+../source/Velocista.c:1374:6:PWM_Motores	16	static

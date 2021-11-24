@@ -451,18 +451,18 @@ static void ADC1_init(void) {
 }
 
 /***********************************************************************************************************************
- * FTM0 initialization code
+ * FTM3 initialization code
  **********************************************************************************************************************/
 /* clang-format off */
 /* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 instance:
-- name: 'FTM0'
+- name: 'FTM3'
 - type: 'ftm'
 - mode: 'EdgeAligned'
 - custom_name_enabled: 'false'
 - type_id: 'ftm_a206ca22312775f3c8a462078188c129'
 - functional_group: 'BOARD_InitPeripherals'
-- peripheral: 'FTM0'
+- peripheral: 'FTM3'
 - config_sets:
   - ftm_main_config:
     - ftm_config:
@@ -503,7 +503,7 @@ instance:
     - timer_interrupts: ''
     - enable_irq: 'false'
     - ftm_interrupt:
-      - IRQn: 'FTM0_IRQn'
+      - IRQn: 'FTM3_IRQn'
       - enable_interrrupt: 'enabled'
       - enable_priority: 'false'
       - priority: '0'
@@ -512,24 +512,40 @@ instance:
   - ftm_edge_aligned_mode:
     - ftm_edge_aligned_channels_config:
       - 0:
-        - channelId: 'PWM_1'
+        - channelId: 'PWM_10'
+        - edge_aligned_mode: 'kFTM_EdgeAlignedPwm'
+        - edge_aligned_pwm:
+          - chnlNumber: 'kFTM_Chnl_0'
+          - level: 'kFTM_LowTrue'
+          - dutyValueStr: '0'
+          - enable_chan_irq: 'false'
+      - 1:
+        - channelId: 'PWM_21'
         - edge_aligned_mode: 'kFTM_EdgeAlignedPwm'
         - edge_aligned_pwm:
           - chnlNumber: 'kFTM_Chnl_1'
           - level: 'kFTM_LowTrue'
           - dutyValueStr: '0'
           - enable_chan_irq: 'false'
-      - 1:
-        - channelId: 'PWM_12'
+      - 2:
+        - channelId: 'PWM_11'
         - edge_aligned_mode: 'kFTM_EdgeAlignedPwm'
         - edge_aligned_pwm:
           - chnlNumber: 'kFTM_Chnl_2'
           - level: 'kFTM_LowTrue'
           - dutyValueStr: '0'
           - enable_chan_irq: 'false'
+      - 3:
+        - channelId: 'PWM_20'
+        - edge_aligned_mode: 'kFTM_EdgeAlignedPwm'
+        - edge_aligned_pwm:
+          - chnlNumber: 'kFTM_Chnl_3'
+          - level: 'kFTM_LowTrue'
+          - dutyValueStr: '0'
+          - enable_chan_irq: 'false'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
-const ftm_config_t FTM0_config = {
+const ftm_config_t FTM3_config = {
   .prescale = kFTM_Prescale_Divide_1,
   .faultMode = kFTM_Fault_Disable,
   .faultFilterValue = 0,
@@ -544,7 +560,12 @@ const ftm_config_t FTM0_config = {
   .useGlobalTimeBase = false
 };
 
-const ftm_chnl_pwm_config_param_t FTM0_pwmSignalParams[] = { 
+const ftm_chnl_pwm_config_param_t FTM3_pwmSignalParams[] = { 
+  {
+    .chnlNumber = kFTM_Chnl_0,
+    .level = kFTM_LowTrue,
+    .dutyValue = 0,
+  },
   {
     .chnlNumber = kFTM_Chnl_1,
     .level = kFTM_LowTrue,
@@ -554,14 +575,19 @@ const ftm_chnl_pwm_config_param_t FTM0_pwmSignalParams[] = {
     .chnlNumber = kFTM_Chnl_2,
     .level = kFTM_LowTrue,
     .dutyValue = 0,
+  },
+  {
+    .chnlNumber = kFTM_Chnl_3,
+    .level = kFTM_LowTrue,
+    .dutyValue = 0,
   }
 };
 
-static void FTM0_init(void) {
-  FTM_Init(FTM0_PERIPHERAL, &FTM0_config);
-  FTM_SetTimerPeriod(FTM0_PERIPHERAL, FTM0_TIMER_MODULO_VALUE);
-  FTM_SetupPwmMode(FTM0_PERIPHERAL, FTM0_pwmSignalParams, sizeof(FTM0_pwmSignalParams) / sizeof(ftm_chnl_pwm_config_param_t), kFTM_EdgeAlignedPwm);
-  FTM_StartTimer(FTM0_PERIPHERAL, kFTM_SystemClock);
+static void FTM3_init(void) {
+  FTM_Init(FTM3_PERIPHERAL, &FTM3_config);
+  FTM_SetTimerPeriod(FTM3_PERIPHERAL, FTM3_TIMER_MODULO_VALUE);
+  FTM_SetupPwmMode(FTM3_PERIPHERAL, FTM3_pwmSignalParams, sizeof(FTM3_pwmSignalParams) / sizeof(ftm_chnl_pwm_config_param_t), kFTM_EdgeAlignedPwm);
+  FTM_StartTimer(FTM3_PERIPHERAL, kFTM_SystemClock);
 }
 
 /***********************************************************************************************************************
@@ -574,7 +600,7 @@ void BOARD_InitPeripherals(void)
   PIT_init();
   ADC0_init();
   ADC1_init();
-  FTM0_init();
+  FTM3_init();
 }
 
 /***********************************************************************************************************************

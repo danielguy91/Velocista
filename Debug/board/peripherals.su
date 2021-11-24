@@ -10,6 +10,6 @@ D:\Users\centro electrico\Desktop\UNER\Microcontroladores\K64F\Velocista\drivers
 ../board/peripherals.c:192:13:PIT_init	8	static
 ../board/peripherals.c:317:13:ADC0_init	8	static
 ../board/peripherals.c:438:13:ADC1_init	8	static
-../board/peripherals.c:560:13:FTM0_init	8	static
-../board/peripherals.c:570:6:BOARD_InitPeripherals	8	static
-../board/peripherals.c:583:6:BOARD_InitBootPeripherals	8	static
+../board/peripherals.c:586:13:FTM3_init	8	static
+../board/peripherals.c:596:6:BOARD_InitPeripherals	8	static
+../board/peripherals.c:609:6:BOARD_InitBootPeripherals	8	static

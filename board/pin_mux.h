@@ -65,22 +65,40 @@ void BOARD_InitBootPins(void);
 #define BOARD_ADC0_SE12_PIN_MASK (1U << 2U)      /*!<@brief PORT pin mask */
                                                  /* @} */
 
-/*! @name PORTC3 (number 73), J1[16]
+/*! @name PORTD0 (number 93), J2[6]
   @{ */
 
 /* Symbols to be used with PORT driver */
-#define BOARD_PWM_1_PORT PORTC               /*!<@brief PORT peripheral base pointer */
-#define BOARD_PWM_1_PIN 3U                   /*!<@brief PORT pin number */
-#define BOARD_PWM_1_PIN_MASK (1U << 3U)      /*!<@brief PORT pin mask */
-                                             /* @} */
+#define BOARD_PWM_10_PORT PORTD               /*!<@brief PORT peripheral base pointer */
+#define BOARD_PWM_10_PIN 0U                   /*!<@brief PORT pin number */
+#define BOARD_PWM_10_PIN_MASK (1U << 0U)      /*!<@brief PORT pin mask */
+                                              /* @} */
 
-/*! @name PORTC2 (number 72), J1[14]
+/*! @name PORTD2 (number 95), J2[8]
   @{ */
 
 /* Symbols to be used with PORT driver */
-#define BOARD_PWM_12_PORT PORTC               /*!<@brief PORT peripheral base pointer */
-#define BOARD_PWM_12_PIN 2U                   /*!<@brief PORT pin number */
-#define BOARD_PWM_12_PIN_MASK (1U << 2U)      /*!<@brief PORT pin mask */
+#define BOARD_PWM_11_PORT PORTD               /*!<@brief PORT peripheral base pointer */
+#define BOARD_PWM_11_PIN 2U                   /*!<@brief PORT pin number */
+#define BOARD_PWM_11_PIN_MASK (1U << 2U)      /*!<@brief PORT pin mask */
+                                              /* @} */
+
+/*! @name PORTD3 (number 96), J2[10]
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_PWM_20_PORT PORTD               /*!<@brief PORT peripheral base pointer */
+#define BOARD_PWM_20_PIN 3U                   /*!<@brief PORT pin number */
+#define BOARD_PWM_20_PIN_MASK (1U << 3U)      /*!<@brief PORT pin mask */
+                                              /* @} */
+
+/*! @name PORTD1 (number 94), J2[12]
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_PWM_21_PORT PORTD               /*!<@brief PORT peripheral base pointer */
+#define BOARD_PWM_21_PIN 1U                   /*!<@brief PORT pin number */
+#define BOARD_PWM_21_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
                                               /* @} */
 
 /*!

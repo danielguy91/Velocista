@@ -19,6 +19,7 @@
 void DecodificarHeaderESP();
 void CksVerif();
 void CMD();
+void Respuestas();
 
 void ESP_SendATCommand(void);    //, uint16_t msTimeout
 void ESP_chargebuf(const char *str,uint8_t size);
@@ -27,6 +28,11 @@ void HeaderToTX();
 void Send_Sensores();
 void Sensar(uint8_t Nsen);
 
+void MaxMin();
+void Normalizado();
+float Caulcolo_Pesos();
+void PID(float desvio);                        // En esta afuncion calculo el pid y como entrada tiene el error que es la disancia que mi robot esta desviado de la linea
+void PWM_Motores(float pwm);
 /***********************************************************************************************************************
  * DEFINICIONES Y CONSTANTES
  **********************************************************************************************************************/
@@ -40,8 +46,10 @@ _unionNd Nd,proxBytes;
 #define START flag1.bit.b0
 #define STOP flag1.bit.b1
 #define PWM flag1.bit.b3
-#define SENSAR_OK flag1.bit.b4
+#define SEN_0k flag1.bit.b4
 #define Send_sensors flag1.bit.b5
+#define CALIBRAR flag1.bit.b6
+
 
 const char ATmux[]={"AT+CIPMUX=0\r\n"};
 const char ATmode[]={"AT+CWMODE=3\r\n"};
@@ -81,7 +89,7 @@ const char ResATsendData101[]="\r\nRecv 10 bytes\r\n\r\nSEND OK\r\n";
  * VARIABLES
  **********************************************************************************************************************/
 uint8_t StatusProgram;                                                                         // Variable para controlar estado del programa
-volatile uint32_t timerCounter,timerConvercion,timerReset,TimerPWM;
+volatile uint32_t timerCounter,timerConvercion,timerReset,TimerCorrecion;
 
 
 
@@ -102,7 +110,26 @@ uint8_t RxBufUsb[256],TxBufUsb[256];                                            
 
 volatile uint8_t Sensores,posSen;
 int32_t Cyn70[8];
+float Normalizados[8];
 
+/******** VARIABLES PARA ALGORITMO******************/
+
+unsigned int Minimos[]={65000,65000,65000,65000,65000,65000,65000,65000};
+unsigned int Maximos[]={0,0,0,0,0,0,0,0};
+uint16_t Datos=0;
+float Pesos[]={-35.0,-25.0,-15.0,-1.0,1.0,15.0,25.0,35.0};               // pesos elegidos para cada sensor (distancias de cada censor al centro de linea)
+float Peso_anterior;                                                    // para recordad la posicion
+float error,error_anterior=0.0,up,ui=0.0,ui_anterior=0.0,ud,ut,setpoint=0,kp,ki,kd;
+float ut_maximo=1000.0,ut_minima=-200.0;
+float Vel_derecha,Vel_izquierda,Vel_derecho=2500.0,linea_actual;
+uint8_t StatusAlgorit=0,pulsos;
+uint32_t cont_linea=0;
+_sWork kp_D,ki_D,kd_D,kp_I,ki_I,kd_I,Set_vel_der,set_vel_izq;
+
+// Pruebas exitosas
+//Vel_derecho=2000
+//kp=70
+//Vel maxima 2500
 int main(void) {
 
     /* Init board hardware. */
@@ -116,8 +143,8 @@ int main(void) {
     BOARD_InitDebugConsole();
 #endif
 
-
     /* Force the counter to be placed into memory. */
+
 
     ESP_Tx.buf=TxBufEsp;                          // Buffer de transmisión
     ESP_Tx.iW=0;
@@ -136,11 +163,14 @@ int main(void) {
 
     Sensores=0;
     posSen=0;
+    kp=0.0;
+    ki=0.0;
+    kd=0.0;
+    pulsos=0;
 
-    PIT_StartTimer(PIT_PERIPHERAL, PIT_CHANNEL_1);              // Inicio el PIT canal 2
+    //PIT_StartTimer(PIT_PERIPHERAL, PIT_CHANNEL_1);        // Inicio el PIT canal 2
+
     /* Enter an infinite loop, just incrementing a counter. */
-
-
 
     while(1) {
 
@@ -176,61 +206,82 @@ int main(void) {
 
     	      case 4:
 
-    		           switch(Command){
-
-							   case 0xF0:
-									  if(ESP_Rx.iW != ESP_Rx.iR){
-
-										 if(ESP_Rx.buf[ESP_Rx.iR]!='>'){
-										   ESP_Rx.iR++;
-										  }
-										 else{
-											   Nd.value=0x03;
-											   HeaderToTX();
-											   ESP_Tx.buf[ESP_Tx.iW++]=0xF0;
-											   cksSend^=0xF0;
-											   ESP_Tx.buf[ESP_Tx.iW++]=0xD0;
-											   cksSend^=0xF0;
-											   ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
-											   StatusProgram=1;
-											   charge=0;
-
-													   }
-										}
-
-							   break;
-
-							   case 0xD0:                                       // Tiempo Iniciado
-									  if(ESP_Rx.iW != ESP_Rx.iR){
-
-										 if(ESP_Rx.buf[ESP_Rx.iR]!='>'){
-										   ESP_Rx.iR++;
-										  }
-										 else{
-											   Nd.value=0x03;
-											   HeaderToTX();
-											   ESP_Tx.buf[ESP_Tx.iW++]=0xD0;
-											   cksSend^=0xF0;
-											   ESP_Tx.buf[ESP_Tx.iW++]=0x0D;
-											   cksSend^=0xF0;
-											   ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
-											   StatusProgram=1;
-											   charge=0;
-
-													   }
-										}
-
-							    break;
-
-    		           }
-
-
+    	    	  Respuestas();
 
     	      break;
     	    }
 
 
-      if(Send_sensors==1 && timerConvercion==0){
+    	switch(StatusAlgorit){
+
+    	case 0 :                                // Calibrar
+
+    		if(CALIBRAR==1){
+
+    				MaxMin();
+    			    StatusAlgorit++;
+    			    PIT_StartTimer(PIT_PERIPHERAL, PIT_CHANNEL_1);
+    		}
+
+         break;
+
+    	case 1:
+
+    		if((START==1 && STOP==0)){
+
+    		     if(TimerCorrecion==0){
+
+    		    	   TimerCorrecion=1;
+
+    		    	   Normalizado();
+
+    		    	  linea_actual=Caulcolo_Pesos();
+
+    		    	  if((linea_actual>=-1.0)&&(linea_actual<=1.0)){             //para detectar linea recta
+
+    		    		  cont_linea++;
+    		    	  }else{
+    		    		  cont_linea=0;
+    		    		  GPIO_PinWrite(BOARD_LED_GREEN_GPIO, BOARD_LED_GREEN_GPIO_PIN,0U);
+    		    	  }
+
+    		    	  if(cont_linea>=8){
+    		    		  FTM_StopTimer(FTM3_PERIPHERAL);
+    		    		  FTM3_PERIPHERAL->CONTROLS[0].CnV=3999.0;
+    		    		  FTM3_PERIPHERAL->CONTROLS[3].CnV=3999.0;
+    		    		  FTM3_PERIPHERAL->CONTROLS[1].CnV=0.0;
+    		    		  FTM3_PERIPHERAL->CONTROLS[2].CnV=0.0;
+    		    		  FTM_StartTimer(FTM3_PERIPHERAL, kFTM_SystemClock);
+    		    		  GPIO_PinWrite(BOARD_LED_GREEN_GPIO, BOARD_LED_GREEN_GPIO_PIN, 1U);
+
+    		    	  }else{
+
+    		    		  PID(Caulcolo_Pesos());
+
+    		    	  }
+    		      }
+
+    		  }else{
+
+    			  FTM_StopTimer(FTM3_PERIPHERAL);
+    			  FTM3_PERIPHERAL->CONTROLS[0].CnV=0.0;
+    			  FTM3_PERIPHERAL->CONTROLS[3].CnV=0.0;
+    			  FTM3_PERIPHERAL->CONTROLS[1].CnV=0.0;
+    			  FTM3_PERIPHERAL->CONTROLS[2].CnV=0.0;
+    			 FTM_StartTimer(FTM3_PERIPHERAL, kFTM_SystemClock);
+
+    		  }
+
+    	break;
+
+    	}
+
+
+
+
+
+
+    	if(Send_sensors==1 && timerConvercion==0){
 
 
     	if(charge==0){
@@ -252,13 +303,29 @@ int main(void) {
 					Send_Sensores();
 					timerConvercion=10;
 					charge=0;
-    	          }
+
+    	}
 
 
        }
 
+ 		if((GPIO_PinRead(BOARD_SW2_GPIO, BOARD_SW2_GPIO_PIN)==0) && current_state==ST_Conect){
+
+    			CALIBRAR=1;
+    			pulsos++;
+
+    			if(pulsos==2){
+    			   	START=1;
+    			   	STOP=0;
+    			    		}
+    			if(pulsos>3){
+    				pulsos=0;
+    			}
+    	}
 
        ESP_SendATCommand();
+
+
 
 
         __asm volatile ("nop");
@@ -773,14 +840,14 @@ void CMD(){
         cmdPos_inBuff++;
         TimerMS.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
 
-        TimerPWM=(TimerMS.u32/10);
+       // TimerPWM=(TimerMS.u32/10);
 
-        FTM_StopTimer(FTM0_PERIPHERAL);
-        FTM0_PERIPHERAL->CONTROLS[1].CnV=PWM1.u16[0];
-        FTM0_PERIPHERAL->CONTROLS[2].CnV=PWM2.u16[0];
+        FTM_StopTimer(FTM3_PERIPHERAL);
+        FTM3_PERIPHERAL->CONTROLS[0].CnV=PWM1.u16[0];
+        FTM3_PERIPHERAL->CONTROLS[3].CnV=PWM2.u16[0];
          //FTM0_PERIPHERAL->CONTROLS[1].CnV=PWM11;
          //	FTM0_PERIPHERAL->CONTROLS[2].CnV=PWM21;
-        FTM_StartTimer(FTM0_PERIPHERAL, kFTM_SystemClock);
+        FTM_StartTimer(FTM3_PERIPHERAL, kFTM_SystemClock);
         PWM=1;
 		GPIO_PortToggle(BOARD_LED_BLUE_GPIO, 1u << BOARD_LED_BLUE_GPIO_PIN);
 		StatusProgram=4;
@@ -788,18 +855,97 @@ void CMD(){
 
 	break;
 
-	case 0XA0:
+	case 0XA0:                                    // START
 
 		StatusProgram=1;
 		START=1;
+		STOP=0;
+		cmdPos_inBuff++;
+		kp_D.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kp_D.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kp_D.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kp_D.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+
+		ki_D.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		ki_D.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		ki_D.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		ki_D.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+
+		kd_D.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kd_D.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kd_D.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kd_D.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+
+
+		kp_I.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kp_I.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kp_I.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kp_I.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+
+		ki_I.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		ki_I.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		ki_I.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		ki_I.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+
+		kd_I.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kd_I.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kd_I.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		kd_I.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+
+		Set_vel_der.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		Set_vel_der.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		Set_vel_der.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		Set_vel_der.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+
+		set_vel_izq.u8[0]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		set_vel_izq.u8[1]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		set_vel_izq.u8[2]=ESP_Rx.buf[cmdPos_inBuff];
+		cmdPos_inBuff++;
+		set_vel_izq.u8[3]=ESP_Rx.buf[cmdPos_inBuff];
+
+
+		kp=kp_D.u32;
+		ki=ki_D.u32;
+		kd=kd_D.u32;
+		Vel_derecho=Set_vel_der.u32;
 
 	break;
 
-	case 0X0A:
+	case 0X0A:                                   //STOP
 
 		StatusProgram=1;
 		STOP=1;
-
+		START=0;
 	break;
 
 	case 0X0E:                                // Pido valores de sensores
@@ -809,8 +955,69 @@ void CMD(){
 		timerConvercion=10;
 
 	break;
-	    }
+
+	case 0X0B:                                // CALIBRAR
+		StatusProgram=1;
+		CALIBRAR=1;
+
+	break;
+
 	}
+}
+
+void Respuestas(){
+
+    switch(Command){
+
+			   case 0xF0:
+					  if(ESP_Rx.iW != ESP_Rx.iR){
+
+						 if(ESP_Rx.buf[ESP_Rx.iR]!='>'){
+						   ESP_Rx.iR++;
+						  }
+						 else{
+							   Nd.value=0x03;
+							   HeaderToTX();
+							   ESP_Tx.buf[ESP_Tx.iW++]=0xF0;
+							   cksSend^=0xF0;
+							   ESP_Tx.buf[ESP_Tx.iW++]=0xD0;
+							   cksSend^=0xF0;
+							   ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
+							   StatusProgram=1;
+							   charge=0;
+
+									   }
+						}
+
+			   break;
+
+			   case 0xD0:                                       // Tiempo Iniciado
+					  if(ESP_Rx.iW != ESP_Rx.iR){
+
+						 if(ESP_Rx.buf[ESP_Rx.iR]!='>'){
+						   ESP_Rx.iR++;
+						  }
+						 else{
+							   Nd.value=0x03;
+							   HeaderToTX();
+							   ESP_Tx.buf[ESP_Tx.iW++]=0xD0;
+							   cksSend^=0xF0;
+							   ESP_Tx.buf[ESP_Tx.iW++]=0x0D;
+							   cksSend^=0xF0;
+							   ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
+							   StatusProgram=1;
+							   charge=0;
+
+									   }
+						}
+
+			    break;
+
+    }
+
+
+}
+
 
 /***********************************************************************************************************************
  * TEMPORIZADORES
@@ -834,14 +1041,16 @@ void PIT_CHANNEL_0_IRQHANDLER(void) {
   	  timerReset--;
         }
 
-    if(timerConvercion != 0U){
+    if(timerConvercion!=0U){
   	  timerConvercion--;
          }
 
-    if(TimerPWM != 0U){
-    	TimerPWM--;
+    if(TimerCorrecion != 0U){
+    	TimerCorrecion--;
 
         }
+
+
 
 
   /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
@@ -863,7 +1072,7 @@ void PIT_CHANNEL_1_IRQHANDLER(void) {
 
 
   Sensar(Sensores);
-  SENSAR_OK=0;
+
 
   /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
      Store immediate overlapping exception return operation might vector to incorrect interrupt. */
@@ -881,7 +1090,17 @@ void ADC1_IRQHANDLER(void) {
 
 
   /* Place your code here */
-	Cyn70[Sensores++]=ADC16_GetChannelConversionValue(ADC1_PERIPHERAL,0);
+
+
+ 	Cyn70[Sensores]=ADC16_GetChannelConversionValue(ADC1_PERIPHERAL,0);
+
+	 if(SEN_0k==0){
+
+		 if(Cyn70[Sensores]>=Maximos[Sensores]){Maximos[Sensores]=Cyn70[Sensores];}
+	     if(Cyn70[Sensores]<=Minimos[Sensores]){Minimos[Sensores]=Cyn70[Sensores];}
+	    Datos++;
+	 }
+	 Sensores++;
 
 
   /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
@@ -898,7 +1117,17 @@ void ADC0_IRQHANDLER(void) {
 
   /* Place your code here */
 
-	Cyn70[Sensores++]=ADC16_GetChannelConversionValue(ADC0_PERIPHERAL,0);
+
+	Cyn70[Sensores]=ADC16_GetChannelConversionValue(ADC0_PERIPHERAL,0);
+
+	 if(SEN_0k==0){
+
+		 if(Cyn70[Sensores]>=Maximos[Sensores]){Maximos[Sensores]=Cyn70[Sensores];}
+	     if(Cyn70[Sensores]<=Minimos[Sensores]){Minimos[Sensores]=Cyn70[Sensores];}
+	    Datos++;
+	 }
+
+	 Sensores++;
 
     if(Sensores>=8){
     	Sensores=0;
@@ -1038,5 +1267,141 @@ void Send_Sensores(){
     ESP_Tx.buf[ESP_Tx.iW++]=Sensor8.u8[3];
     cksSend^=Sensor8.u8[3];
     ESP_Tx.buf[ESP_Tx.iW++]=cksSend;
+
+}
+
+/***********************************************************************************************************************
+ * ALGORITMO
+ **********************************************************************************************************************/
+
+void MaxMin(){
+
+		                                // cantidad de muestras a tomar (Datos) ,sen numero de sensor
+	 GPIO_PortToggle(BOARD_LED_RED_GPIO, 1u << BOARD_LED_BLUE_GPIO_PIN);
+
+
+	 while(Datos<1500){
+
+        if(timerConvercion==0){
+        timerConvercion=1;
+         Sensar(Sensores);
+
+        }
+
+	 }
+    SEN_0k=1;
+	GPIO_PortToggle(BOARD_LED_RED_GPIO, 1u << BOARD_LED_BLUE_GPIO_PIN);
+}
+
+void Normalizado(){
+uint8_t cont;
+float aux_minimo,aux_maximo;
+float Promedio;
+
+	for(cont=0;cont<8;cont++){
+
+	aux_minimo=Minimos[cont];
+	aux_maximo=Maximos[cont];
+	Promedio=(aux_maximo-aux_minimo)/2;
+
+	if(Cyn70[cont]>=(aux_minimo+Promedio)){
+
+		Normalizados[cont]=0;
+	}else{
+
+		Normalizados[cont]=1;
+	}
+
+	}
+
+
+}
+
+float Caulcolo_Pesos(){
+
+uint8_t cont;
+float numerador=0,denominador=0;
+float res;
+
+ for(cont=0;cont<8;cont++){
+
+	numerador=Normalizados[cont]*Pesos[cont]+numerador;
+	denominador=Normalizados[cont]+denominador;
+ }
+
+  if(denominador>=7.8){
+
+	  if(Peso_anterior>0){ res=35.0;}
+	  else if(Peso_anterior<0){ res=-35.0;}
+
+  }else if(denominador<=0.1){
+
+	  if(Peso_anterior>0){ res=35.0;}
+	 else if(Peso_anterior<0){ res=-35.0;}
+
+  }else{
+
+	  res=numerador/denominador;
+	  Peso_anterior=res;
+
+  }
+  return res;
+}
+
+void PID(float desvio){
+
+const float t_muestreo=1;                                         // Elijo time muestreo = 1
+
+	error=setpoint-desvio;                                        // el error es cuan separado estoy del centro de la linea
+
+	up=kp * error;
+
+	ui=ui_anterior+(ki*t_muestreo*error);
+
+	ud=kd*(error-error_anterior)/t_muestreo;
+
+	ut=up+ui+ud;
+
+//	if(ut>ut_maximo){ut=ut_maximo;}
+//
+//	if(ut<ut_minima){ut=ut_minima;}
+
+	ui_anterior=ui;
+	error_anterior=error;
+    PWM_Motores(ut);
+
+}
+void PWM_Motores(float pwm){
+
+	Vel_derecha=Vel_derecho-pwm;
+	Vel_izquierda=Vel_derecho+pwm;
+
+	 FTM_StopTimer(FTM3_PERIPHERAL);
+
+	if(Vel_derecha<-3999) { Vel_derecha=-3999;}
+	if(Vel_derecha>3999) { Vel_derecha=3999;}
+	if(Vel_izquierda<-3999) { Vel_izquierda=-3999;}
+	if(Vel_izquierda>3999) { Vel_izquierda=3999;}
+
+	if(Vel_derecha<= 0){
+
+		 FTM3_PERIPHERAL->CONTROLS[2].CnV=abs(Vel_derecha);
+
+		 FTM3_PERIPHERAL->CONTROLS[0].CnV=0;
+	}else{
+	       FTM3_PERIPHERAL->CONTROLS[0].CnV=abs(Vel_derecha);
+	       FTM3_PERIPHERAL->CONTROLS[2].CnV=0;
+	}
+
+	if(Vel_izquierda<=0){
+	 FTM3_PERIPHERAL->CONTROLS[1].CnV=abs(Vel_izquierda);
+	 FTM3_PERIPHERAL->CONTROLS[3].CnV=0;
+	}else{
+
+		 FTM3_PERIPHERAL->CONTROLS[3].CnV=abs(Vel_izquierda);
+		 FTM3_PERIPHERAL->CONTROLS[1].CnV=0;
+	}
+
+	 FTM_StartTimer(FTM3_PERIPHERAL, kFTM_SystemClock);
 
 }

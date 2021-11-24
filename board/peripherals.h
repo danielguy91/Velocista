@@ -100,15 +100,19 @@ extern "C" {
 /* Channel 3 (SE.14) conversion control group. */
 #define ADC1_CH3_CONTROL_GROUP 0
 /* Definition of peripheral ID */
-#define FTM0_PERIPHERAL FTM0
+#define FTM3_PERIPHERAL FTM3
 /* Definition of the clock source frequency */
-#define FTM0_CLOCK_SOURCE 4000000UL
+#define FTM3_CLOCK_SOURCE 4000000UL
 /* Definition of the clock source frequency */
-#define FTM0_TIMER_MODULO_VALUE 3999
-/* Definition of FTM0 channel/pair number 1 on Edge-aligned PWM */
-#define FTM0_PWM_1_CHANNEL kFTM_Chnl_1
-/* Definition of FTM0 channel/pair number 2 on Edge-aligned PWM */
-#define FTM0_PWM_12_CHANNEL kFTM_Chnl_2
+#define FTM3_TIMER_MODULO_VALUE 3999
+/* Definition of FTM3 channel/pair number 0 on Edge-aligned PWM */
+#define FTM3_PWM_10_CHANNEL kFTM_Chnl_0
+/* Definition of FTM3 channel/pair number 1 on Edge-aligned PWM */
+#define FTM3_PWM_21_CHANNEL kFTM_Chnl_1
+/* Definition of FTM3 channel/pair number 2 on Edge-aligned PWM */
+#define FTM3_PWM_11_CHANNEL kFTM_Chnl_2
+/* Definition of FTM3 channel/pair number 3 on Edge-aligned PWM */
+#define FTM3_PWM_20_CHANNEL kFTM_Chnl_3
 
 /***********************************************************************************************************************
  * Global variables
@@ -121,7 +125,7 @@ extern const adc16_channel_mux_mode_t ADC0_muxMode;
 extern adc16_channel_config_t ADC1_channelsConfig[4];
 extern const adc16_config_t ADC1_config;
 extern const adc16_channel_mux_mode_t ADC1_muxMode;
-extern const ftm_config_t FTM0_config;
+extern const ftm_config_t FTM3_config;
 
 /***********************************************************************************************************************
  * Initialization functions
